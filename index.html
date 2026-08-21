@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sho-Craft-Group 公式サイト</title>
+  <style>
+    :root {
+      --primary: #0071e3;
+      --bg: #f5f5f7;
+      --card-bg: #ffffff;
+      --text: #1d1d1f;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0; padding: 0;
+      line-height: 1.5;
+    }
+    header {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(10px);
+      padding: 15px 20px;
+      position: sticky; top: 0;
+      display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid #d2d2d7;
+      z-index: 100;
+    }
+    .logo { font-size: 20px; font-weight: bold; color: var(--primary); }
+    .container { max-width: 700px; margin: 0 auto; padding: 20px; }
+    
+    .card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    .hero { text-align: center; }
+    .hero h1 { margin-bottom: 8px; font-size: 26px; }
+    .hero p { color: #86868b; margin-top: 0; }
+    
+    .btn {
+      background-color: var(--primary);
+      color: white; border: none;
+      padding: 12px 24px; border-radius: 20px;
+      font-size: 15px; font-weight: bold; cursor: pointer;
+      text-decoration: none; display: inline-block;
+      transition: background-color 0.2s;
+    }
+    .btn:hover { background-color: #0077ed; }
+    .btn-secondary { background: #e8e8ed; color: var(--text); }
+    .btn-secondary:hover { background: #dcdce0; }
+    
+    .store-box {
+      border: 2px solid var(--primary);
+      background: #f0f7ff;
+      border-radius: 14px;
+      padding: 20px;
+      text-align: center;
+      margin-top: 15px;
+    }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">Sho-Craft-Group</div>
+    <div id="user-display">未ログイン</div>
+  </header>
+
+  <div class="container">
+
+    <!-- ヒーローエリア -->
+    <div class="card hero">
+      <h1>Sho-Craft-Group Portal</h1>
+      <p>自作アプリ・ゲーム・ツールの公式ポータルサイト</p>
+    </div>
+
+    <!-- アカウント登録 / ログイン -->
+    <div class="card" id="auth-card">
+      <h3>グループ共通アカウント</h3>
+      <p style="font-size: 14px; color: #666;">公式ストアや制作アプリ全般で使えるアカウントです。</p>
+      
+      <div id="login-box">
+        <label style="display: block; margin-bottom: 15px; cursor: pointer;">
+          <input type="checkbox" id="remember-me" checked> ログイン状態を保存する
+        </label>
+        <button class="btn" id="login-btn">Googleでログイン</button>
+      </div>
+
+      <div id="user-info" class="hidden">
+        <p>ログイン中: <strong id="user-name"></strong></p>
+        <button class="btn btn-secondary" id="logout-btn">ログアウト</button>
+      </div>
+    </div>
+
+    <!-- Sho-Craft-Store のダウンロード・追加案内 -->
+    <div class="card">
+      <h2>🛒 Sho-Craft-Store を手に入れよう</h2>
+      <p>すべてのアプリやゲームをダウンロードできる専用ストアアプリです。</p>
+      
+      <div class="store-box">
+        <h3>Sho-Craft-Store (v1.0)</h3>
+        <p>まずはこの公式ストアを端末に追加してください！</p>
+        <br>
+        
+        <!-- 階層をひとつ遡って Store フォルダを参照 -->
+        <a href="../Store/store.html" class="btn" target="_blank">Sho-Craft-Store を入手（Web/iOS）</a>
+        
+        <br><br>
+        <!-- Android向け直接ダウンロードボタン -->
+        <a href="Sho-Craft-Store.apk" class="btn btn-secondary" download>Android版 (.apk) をダウンロード</a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Firebase 処理 -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { 
+      getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged,
+      setPersistence, browserLocalPersistence, browserSessionPersistence
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyC37lcGZIOUJ2MoD0w37ibTjMuv74ax2uk",
+      authDomain: "sho-craft-group.firebaseapp.com",
+      projectId: "sho-craft-group",
+      storageBucket: "sho-craft-group.firebasestorage.app",
+      messagingSenderId: "964049404819",
+      appId: "1:964049404819:web:509bb90e493664dd001e66"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+
+    const loginBtn = document.getElementById("login-btn");
+    const logoutBtn = document.getElementById("logout-btn");
+    const loginBox = document.getElementById("login-box");
+    const userInfo = document.getElementById("user-info");
+    const userName = document.getElementById("user-name");
+    const rememberMe = document.getElementById("remember-me");
+    const userDisplay = document.getElementById("user-display");
+
+    loginBtn.addEventListener("click", async () => {
+      const persistence = rememberMe.checked ? browserLocalPersistence : browserSessionPersistence;
+      try {
+        await setPersistence(auth, persistence);
+        await signInWithPopup(auth, provider);
+      } catch (err) {
+        alert("ログイン失敗: " + err.message);
+      }
+    });
+
+    logoutBtn.addEventListener("click", () => signOut(auth));
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        loginBox.classList.add("hidden");
+        userInfo.classList.remove("hidden");
+        userName.textContent = user.displayName;
+        userDisplay.textContent = user.displayName + " さん";
+      } else {
+        loginBox.classList.remove("hidden");
+        userInfo.classList.add("hidden");
+        userDisplay.textContent = "未ログイン";
+      }
+    });
+  </script>
+</body>
+</html>
